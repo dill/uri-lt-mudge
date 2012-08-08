@@ -68,7 +68,14 @@ obs$Group <- as.factor(obs$Group)
 obs$Species <- as.factor(obs$Species)
 obs$Observer <- as.factor(obs$Observer)
 obs$Location <- as.factor(obs$Location)
+
+# bins
+obs$Bin[obs$Bin=="a"] <- "A"
+obs$Bin[obs$Bin=="c"] <- "C"
+#obs <- obs[obs$Bin=="Not recorded",] # PENDING: drop records with no distance?
 obs$Bin <- as.factor(obs$Bin)
+
+
 
 # build the seasons
 # split up the date and make a matrix from it
