@@ -54,6 +54,7 @@ obs$Number <- NULL
 
 # rename "OBJECTID" to "object"
 obs$object <- obs$OBJECTID
+obs$OBJECTID <- NULL
 
 # convert lat long to km from the centre
 kmc <- latlong2km(lon=obs$Long,lat=obs$Lat,lon0=lon.0,lat0=lat.0)
@@ -61,6 +62,27 @@ obs$x <- kmc$km.e
 obs$y <- kmc$km.n
 obs$Lat <- NULL
 obs$Long <- NULL
+
+# make the columns that should be factors into factors
+obs$Group <- as.factor(obs$Group)
+obs$Species <- as.factor(obs$Species)
+obs$Observer <- as.factor(obs$Observer)
+obs$Location <- as.factor(obs$Location)
+obs$Bin <- as.factor(obs$Bin)
+
+# build the seasons
+# split up the date and make a matrix from it
+split.date <- t(matrix(as.numeric(unlist(strsplit(obs$Date,"/"))),nrow=3))
+# allocate months to seasons
+month <- split.date[,2]
+month[month %in% c(6,7,8)] <- "Summer"
+month[month %in% c(9,10,11)] <- "Fall"
+month[month %in% c(12,1,2)] <- "Winter"
+month[month %in% c(3,4,5)] <- "Spring"
+obs$Season <- as.factor(month)
+# pull out the year
+obs$Year <- as.factor(split.date[,3])
+
 
 # PENDING: 
 # difference between Transect and Transect_1?
