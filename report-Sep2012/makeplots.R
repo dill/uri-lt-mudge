@@ -11,32 +11,38 @@ library(ggplot2)
 # plotting options
 p.opts <- opts(panel.grid.major=theme_blank(), 
                panel.grid.minor=theme_blank(), 
-               panel.background=theme_rect(),
+               panel.background=theme_rect(fill=rgb(43,140,190,max=255),
+                                           colour=NA),
                strip.background=theme_blank(),
                legend.key=theme_blank(),
                aspect.ratio=1
-              )
+              ) 
+coord <- coord_cartesian(xlim = c(-40,40),ylim = c(-40,40))
 
 # build a coastline object
-coast.geom <- geom_path(aes(x=x,y=y),data=coast) 
+coast.geom <- geom_polygon(aes(x=x,y=y),colour=NA,fill=rgb(44, 162, 95,max=255),data=coast) 
 
-# x and y limits 
-xlims <- scale_x_continuous(limits=c(-40,40))
-ylims <- scale_y_continuous(limits=c(-40,40)) 
+### all species all seasons
+p.points <- ggplot(obs) + geom_point(aes(x=x,y=y,size=size),
+                                     colour=I(rgb(206, 18, 86,max=255)))
+p <- p.points 
+p <- p + coast.geom
+p <- p + p.opts + xlab("") + ylab("") + coord
 
+print(p)
 
+ggsave(file="all-seasons-all-groups.pdf",width=15,height=15)
 
 
 ### all seasons by species group
 p.points <- ggplot(obs) + geom_point(aes(x=x,y=y,size=size),colour=I("blue"))
 p <- p.points + facet_wrap(~Group,nrow=5)
 p <- p + coast.geom
-p <- p + p.opts + xlims + ylims + xlab("") + ylab("")
+p <- p + p.opts + xlab("") + ylab("") + coord
 
 print(p)
 
 ggsave(file="all-seasons-by-group.pdf",width=15,height=20)
-
 
 # clean up
 rm(p)
@@ -46,23 +52,35 @@ gc()
 ### all species by season
 p <- p.points + facet_wrap(~Season,nrow=2)
 p <- p + coast.geom
-p <- p + p.opts + xlims + ylims + xlab("") + ylab("")
+p <- p + p.opts + xlab("") + ylab("") + coord
 
 #print(p)
 
 ggsave(file="all-groups-by-season.pdf",width=15,height=20)
 
 
-
 ### groups by season
 p <- p.points + facet_grid(Group~Season)
 p <- p + coast.geom
-p <- p + p.opts + xlims + ylims + xlab("") + ylab("")
+p <- p + p.opts + xlab("") + ylab("") + coord
 
 # this takes AAAAAAAAAGES
 #print(p)
 
 ggsave(file="groups-by-season.pdf",width=15,height=40,plot=p)
+
+
+rm(p)
+gc()
+
+# rowSums(table(obs[,c("Group","Species")])>0)
+#     Alcid      Brant  Cormorant      Egret      Eider     Fulmar     Gannet 
+#         5          1          3          1          1          1          1 
+#      Gull     Jaeger  Kittiwake       Loon       LTDU  Merganser  Passerine 
+#         6          1          1          3          1          1          1 
+#    Petrel  Phalarope     Scoter Shearwater  Shorebird       Tern 
+#         2          2          4          6          1          2 
+
 
 
 
