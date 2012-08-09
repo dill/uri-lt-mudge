@@ -98,12 +98,6 @@ obs$Transect <- obs$Transect_1
 obs$Transect_1 <- NULL
 
 
-### Effort data
-# load the effort data
-#effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
-
-# PENDING: pull this in with the GIS data that Kris will give me
-
 
 ### coastline!
 # load the coastline data (from Louise Burt)
@@ -115,10 +109,73 @@ coast <- as.data.frame(latlong2km(lon=coast[,1],
                                   lon0=lon.0,lat0=lat.0))
 names(coast) <- c("x","y")
 
+# make the coastline join up so we can plot as polygons...
+nas <- which(is.na(coast[,1]))
+j <- 1
+new.coast<-c()
+for(i in nas){
+  i<-i-1
+  # if the beginning node is the same as the last  
+  if(coast[i,1]==coast[j,1] & coast[i,2]==coast[j,2]){
+    new.coast <- rbind(new.coast,
+                       c(NA,NA),
+                       coast[j:i,])
+#  }else{
+#    cat("aack -- ",j,i,"\n")
+  }
+
+  j <- i+2
+
+}
+new.coast <- rbind(coast[1:105,],coast[1,],c(NA,NA),
+                   coast[107:388,],coast[107,],c(NA,NA),
+                   coast[390:2979,], # RI coastline 
+                   coast[rev(4647:6433),], # MA coastline 
+                   c(coast[4647,1],coast[7693,2]), # join point
+                   coast[rev(6874:7693),], # MA coastline - top
+                   c(coast[390,1],coast[6874,2]), # join point
+                   coast[390,],c(NA,NA), # back to the start
+                   coast[6435:6443,],coast[6435,],c(NA,NA), 
+                   coast[6445:6872,],coast[6445,],c(NA,NA),  
+                   coast[7695:7719,],coast[7695,],c(NA,NA),
+                   new.coast)
+
+coast <- new.coast
+rm(new.coast)
 
 ### check it's all there
 #plot(coast,type="l",xlim=c(-45,45),ylim=c(-40,40))
 #points(obs$x,obs$y,cex=0.3,pch=19)
+
+#lines(coast[390:2979,],col="red",lwd=2)
+#lines(coast[4647:6433,],col="blue",lwd=2)
+#lines(coast[6874:7693,],col="blue",lwd=2)
+
+### Effort data
+# load the effort data
+#effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
+
+# PENDING: pull this in with the GIS data that Kris will give me
+
+#library(maptools)
+#
+##segs <- readShapeSpatial("geo/aerial_line_extend_1kmland4_")
+#segs <- readShapeSpatial("geo/aerial_line_extend_5000buff2")
+#
+#false.e <- 328083.3333333333
+#false.n <- 0.0
+#
+#seg.dat <- c()
+#for(i in 1:length(segs@lines)){
+#  this.line <- segs@lines[[i]]@Lines[[1]]@coords
+#
+#seg.dat <- rbind(seg.dat,c(this.line[,1],this.line[,2]))
+#
+##  this.km <- latlong2km(lon=this.line[,2]/1000,
+##                        lat=this.line[,1]/10000,
+##                        lat0 = lat.0, lon0=lon.0)
+##  seg.dat<-rbind(seg.dat,c(this.km$km.e,this.km$km.n))
+#}
 
 ### Save!
 #save(coast,obs,effort,file="uri-lt-data.RData")
