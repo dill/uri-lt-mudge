@@ -137,7 +137,7 @@ new.coast <- rbind(coast[1:105,],coast[1,],c(NA,NA),
                    coast[390,],c(NA,NA), # back to the start
                    coast[6435:6443,],coast[6435,],c(NA,NA), 
                    coast[6445:6872,],coast[6445,],c(NA,NA),  
-                   coast[7695:7719,],coast[7695,],c(NA,NA),
+                   coast[7695:7719,],coast[7695,],
                    new.coast)
 
 coast <- new.coast
