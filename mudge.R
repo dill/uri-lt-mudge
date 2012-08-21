@@ -72,8 +72,23 @@ obs$Location <- as.factor(obs$Location)
 # bins
 obs$Bin[obs$Bin=="a"] <- "A"
 obs$Bin[obs$Bin=="c"] <- "C"
-#obs <- obs[obs$Bin=="Not recorded",] # PENDING: drop records with no distance?
+#obs <- obs[obs$Bin!="Not recorded",] # PENDING: drop records with no distance?
 obs$Bin <- as.factor(obs$Bin)
+
+# add distbegin distend fields
+# bin A 44–163m 
+# bin B 164–432m 
+# bin C 433–1000m
+
+obs$distbegin <- rep(NA, nrow(obs))
+obs$distend <- rep(NA, nrow(obs))
+
+obs$distbegin[obs$Bin=="A"] <- 44
+obs$distend[obs$Bin=="A"] <- 163
+obs$distbegin[obs$Bin=="B"] <- 164
+obs$distend[obs$Bin=="B"] <- 432
+obs$distbegin[obs$Bin=="C"] <- 433
+obs$distend[obs$Bin=="C"] <- 1000
 
 
 
@@ -142,6 +157,15 @@ new.coast <- rbind(coast[1:105,],coast[1,],c(NA,NA),
 
 coast <- new.coast
 rm(new.coast)
+
+# put in groups rather than using NAs to separate parts of the map...
+nas <- which(is.na(coast[,1]))
+coast.groups <- rep(1:(length(nas)+1),diff(c(0,nas,nrow(coast)+1))-1)
+
+coast <- cbind(coast[-nas,],
+                   group=coast.groups)
+
+
 
 ### check it's all there
 #plot(coast,type="l",xlim=c(-45,45),ylim=c(-40,40))
