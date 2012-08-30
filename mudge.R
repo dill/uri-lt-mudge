@@ -142,6 +142,7 @@ for(i in nas){
   j <- i+2
 
 }
+# now join everything up
 new.coast <- rbind(coast[1:105,],coast[1,],c(NA,NA),
                    coast[107:388,],coast[107,],c(NA,NA),
                    coast[390:2979,], # RI coastline 
@@ -166,44 +167,75 @@ coast <- cbind(coast[-nas,],
                    group=coast.groups)
 
 
+### Segment data
+library(maptools)
 
-### check it's all there
-#plot(coast,type="l",xlim=c(-45,45),ylim=c(-40,40))
-#points(obs$x,obs$y,cex=0.3,pch=19)
+trans <- readShapeSpatial("geo/transects/aerialtransects082112")
 
-#lines(coast[390:2979,],col="red",lwd=2)
-#lines(coast[4647:6433,],col="blue",lwd=2)
-#lines(coast[6874:7693,],col="blue",lwd=2)
+# the segment ids are stored separately, the coding (I think!) is
+# transect number (1/2 digit) then segment number (1/2 digit)
+segids <- trans@data$Segment
+effort <- trans@data$Length
+transids <- trans@data$Transect
+
+trans.dat <- c()
+for(i in 1:length(trans@lines)){
+  this.line <- trans@lines[[i]]@Lines[[1]]@coords
+
+  this.km <- latlong2km(lon=this.line[,1],
+                        lat=this.line[,2],
+                        lat0 = lat.0, lon0=lon.0)
+
+  # format:  (one line per segment)
+  #   "top" x coordinate
+  #   "top" y coordinate
+  #   "bottom" x coordinate
+  #   "bottom" y coordinate
+  #   centre x
+  #   centre y
+  #   segment label
+  #   effort (length of transect)
+  #   transect label
+  # --- "top" means "end we visited first"
+  trans.dat <- rbind(trans.dat,
+                     c(this.km$km.e[1],this.km$km.n[1],
+                       this.km$km.e[2],this.km$km.n[2],
+                       this.km$km.e[1]+(this.km$km.e[2]-this.km$km.e[1])/2,
+                       this.km$km.n[1]+(this.km$km.n[2]-this.km$km.n[1])/2,
+                       segids[i],
+                       effort[i],
+                       transids[i]))
+
+}
+
+seg <- as.data.frame(trans.dat)
+names(seg) <- c("tx","ty","bx","by","x","y","Sample.Label",
+                       "Effort","Transect.Label")
+
+rm(trans.dat,segids,effort,transids)
+
+#### check it's all there
+#plot(coast$x,coast$y,type="n",xlim=c(-45,45),ylim=c(-40,40))
+#points(obs$x,obs$y,cex=0.1,pch=19,col="red")
+#
+#for(i in unique(coast$group)){
+#  coasty <- coast[coast$group==i,]
+#  lines(coasty$x,coasty$y,lwd=2)
+#}
+#
+#points(transects$x,transects$y,col="blue",pch=19,cex=0.3)
+
 
 ### Effort data
 # load the effort data
 #effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
 
-# PENDING: pull this in with the GIS data that Kris will give me
+# PENDING -- read in the other effort data and allocate properly!
+# need to find a proper "average" per segment or decide via occasion
 
-#library(maptools)
-#
-##segs <- readShapeSpatial("geo/aerial_line_extend_1kmland4_")
-#segs <- readShapeSpatial("geo/aerial_line_extend_5000buff2")
-#
-#false.e <- 328083.3333333333
-#false.n <- 0.0
-#
-#seg.dat <- c()
-#for(i in 1:length(segs@lines)){
-#  this.line <- segs@lines[[i]]@Lines[[1]]@coords
-#
-#seg.dat <- rbind(seg.dat,c(this.line[,1],this.line[,2]))
-#
-##  this.km <- latlong2km(lon=this.line[,2]/1000,
-##                        lat=this.line[,1]/10000,
-##                        lat0 = lat.0, lon0=lon.0)
-##  seg.dat<-rbind(seg.dat,c(this.km$km.e,this.km$km.n))
-#}
 
 ### Save!
-#save(coast,obs,effort,file="uri-lt-data.RData")
-save(coast,obs,file="uri-lt-data.RData")
+save(coast, obs, seg, file="uri-lt-data.RData")
 
 
 
