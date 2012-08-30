@@ -114,8 +114,8 @@ obs$Transect <- NULL
 obs$Transect.Label <- obs$Transect_1
 obs$Transect_1 <- NULL
 
-# Re-label "Segment" as "Segment.Label"
-obs$Segment.Label <- obs$Segment
+# Re-label "Segment" as "Sample.Label"
+obs$Sample.Label <- obs$Segment
 obs$Segment <- NULL
 
 # Re-label "Length" as "Effort"
