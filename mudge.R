@@ -90,6 +90,8 @@ obs$distend[obs$Bin=="B"] <- 432
 obs$distbegin[obs$Bin=="C"] <- 433
 obs$distend[obs$Bin=="C"] <- 1000
 
+# distance field is the midpoint
+obs$distance <- obs$distend - obs$distbegin
 
 
 # build the seasons
@@ -109,9 +111,16 @@ obs$Year <- as.factor(split.date[,3])
 # PENDING: 
 # difference between Transect and Transect_1?
 obs$Transect <- NULL 
-obs$Transect <- obs$Transect_1
+obs$Transect.Label <- obs$Transect_1
 obs$Transect_1 <- NULL
 
+# Re-label "Segment" as "Segment.Label"
+obs$Segment.Label <- obs$Segment
+obs$Segment <- NULL
+
+# Re-label "Length" as "Effort"
+obs$Effort <- obs$Length
+obs$Length <- NULL
 
 
 ### coastline!
