@@ -118,8 +118,8 @@ obs$Transect_1 <- NULL
 obs$Sample.Label <- obs$Segment
 obs$Segment <- NULL
 
-# Re-label "Length" as "Effort"
-obs$Effort <- obs$Length
+# Re-label "Length" as "Effort" (and convert to km)
+obs$Effort <- obs$Length/1000
 obs$Length <- NULL
 
 
@@ -237,14 +237,113 @@ rm(trans.dat,segids,effort,transids)
 
 ### Effort data
 # load the effort data
-#effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
+effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
+# change some names around
+effort$Transect.Label <- effort$Transect
+effort$Transect <- NULL
+
+effort$Sample.Label <- effort$Segment
+effort$Segment <- NULL
+
+# build the seasons
+# split up the date and make a matrix from it
+split.date <- t(matrix(as.numeric(unlist(strsplit(effort$Date,"/"))),nrow=3))
+# allocate months to seasons
+month <- split.date[,2]
+month[month %in% c(6,7,8)] <- "Summer"
+month[month %in% c(9,10,11)] <- "Fall"
+month[month %in% c(12,1,2)] <- "Winter"
+month[month %in% c(3,4,5)] <- "Spring"
+effort$Season <- as.factor(month)
+# pull out the year
+effort$Year <- as.factor(split.date[,3])
+
+## merge this into the segment data
+#effort<-merge(seg,effort,by.x="Sample.Label",by.y="Sample.Label")
+#
+## only need one Transect.Label
+#effort$Transect.Label <- effort$Transect.Label.x
+#effort$Transect.Label.x <- NULL
+#effort$Transect.Label.y <- NULL
+
+# factor whether we were on survey
+effort$Onsurvey_Left <- as.factor(effort$Onsurvey_Left)
+effort$Onsurvey_Right <- as.factor(effort$Onsurvey_Right)
+
 
 # PENDING -- read in the other effort data and allocate properly!
 # need to find a proper "average" per segment or decide via occasion
 
 
+# Prediction grid
+# NB this is from the strip data -- update?
+predgr <- readShapeSpatial("geo/predgrid/Coverage")
+#> str(predgr)
+#Formal class 'SpatialPointsDataFrame' [package "sp"] with 5 slots
+#  ..@ data       :'data.frame': 920 obs. of  23 variables:
+#  .. ..$ LINKID    : num [1:920] 1 2 3 4 5 6 7 8 9 10 ...
+#  .. ..$ PARENTID  : num [1:920] 1 1 1 1 1 1 1 1 1 1 ...
+#  .. ..$ DISTANCELA: num [1:920] 71513 76542 81773 81745 81651 ...
+#  .. ..$ LONGITUDE : num [1:920] -71.7 -71.7 -71.6 -71.6 -71.6 ...
+#  .. ..$ LATITUDE  : num [1:920] 40.9 40.9 40.9 40.9 40.9 ...
+#  .. ..$ DEPTH     : num [1:920] -166 -165 -168 -173 -175 ...
+#  .. ..$ CELLAREA  : num [1:920] 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 ...
+#  .. ..$ SSTAUT    : num [1:920] 12.8 12.9 12.8 12.9 12.9 ...
+#  .. ..$ STDAUT    : num [1:920] 2.99 3.04 3.02 3 2.96 ...
+#  .. ..$ SSTWIN    : num [1:920] 4.64 4.7 4.7 4.7 4.76 ...
+#  .. ..$ STDWIN    : num [1:920] 1.81 1.79 1.76 1.81 1.86 ...
+#  .. ..$ SSTSUM    : num [1:920] 20.8 20.9 20.9 21 21 ...
+#  .. ..$ STDSUM    : num [1:920] 1.85 1.79 1.81 1.87 1.91 ...
+#  .. ..$ SSTSPR    : num [1:920] 9.72 9.96 9.99 9.89 10.02 ...
+#  .. ..$ STDSPR    : num [1:920] 4.45 4.47 4.51 4.52 4.58 ...
+#  .. ..$ SLOPE_DEG_: num [1:920] 0.1277 0.0333 0.0586 0.0208 0.0671 ...
+#  .. ..$ ROUGHNESS : num [1:920] 0.0824 0.0503 0.0561 0.043 0.0366 ...
+#  .. ..$ PHIMEDIAN : num [1:920] 2.22 2.34 2.44 2.5 2.54 ...
+#  .. ..$ VTR_OTF   : int [1:920] 14 3 4 0 4 6 12 19 11 24 ...
+#  .. ..$ VTR_OTF_WI: int [1:920] 0 2 1 0 0 0 5 1 2 3 ...
+#  .. ..$ VTR_OTF_SP: int [1:920] 0 0 1 0 0 0 1 1 0 2 ...
+#  .. ..$ VTR_OTF_SU: int [1:920] 1 0 2 0 4 0 4 10 1 2 ...
+#  .. ..$ VTR_OTF_AU: int [1:920] 13 1 0 0 0 6 2 7 8 17 ...
+#  .. ..- attr(*, "data_types")= chr [1:23] "N" "N" "N" "N" ...
+#  ..@ coords.nrs : num(0) 
+#  ..@ coords     : num [1:920, 1:2] 278339 284901 291463 298025 304587 ...
+#  .. ..- attr(*, "dimnames")=List of 2
+#  .. .. ..$ : chr [1:920] "0" "1" "2" "3" ...
+#  .. .. ..$ : chr [1:2] "coords.x1" "coords.x2"
+#  ..@ bbox       : num [1:2, 1:2] 219281 -58722 501447 138138
+#  .. ..- attr(*, "dimnames")=List of 2
+#  .. .. ..$ : chr [1:2] "coords.x1" "coords.x2"
+#  .. .. ..$ : chr [1:2] "min" "max"
+#  ..@ proj4string:Formal class 'CRS' [package "sp"] with 1 slots
+#  .. .. ..@ projargs: chr NA
+
+# pull out the data
+predgr <- predgr@data
+# remove useless fields
+predgr$LINKID <- NULL
+predgr$PARENTID <- NULL
+
+# convert lat/long
+ne <- latlong2km(lon=predgr$LONGITUDE,lat=predgr$LATITUDE,lon0=lon.0,lat0=lat.0)
+predgr$x <- ne$km.e
+predgr$y <- ne$km.n
+predgr$LONGITUDE <- NULL
+predgr$LATITUDE <- NULL
+
+rm(ne)
+
+# convert distance to land to km and cell area to km^2 
+#  (according to Louise's code)
+predgr$DISTANCELA <- predgr$DISTANCELA/1000
+predgr$CELLAREA <- predgr$CELLAREA/(1000^2)
+
+names(predgr)<-tolower(names(predgr))
+
+pred <- predgr
+rm(predgr)
+
 ### Save!
-save(coast, obs, seg, file="uri-lt-data.RData")
+save(coast, obs, seg, effort, pred, file="uri-lt-data.RData")
 
 
 
