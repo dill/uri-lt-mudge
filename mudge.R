@@ -342,6 +342,26 @@ names(predgr)<-tolower(names(predgr))
 pred <- predgr
 rm(predgr)
 
+
+### match up the extra pred data with to the segments
+
+# find the nearest prediction cell to each segment
+dists <- as.matrix(dist(rbind(pred[,c("x","y")],seg[,c("x","y")]),
+                        diag=TRUE,upper=TRUE))
+dists[lower.tri(dists)] <- NA
+diag(dists) <- NA
+# only take the pred -> seg part of the matrix
+dists <- dists[1:nrow(pred),(nrow(pred)+1):ncol(dists)]
+# what is the nearest cell?
+nearest <- apply(dists,2,which.min)
+
+pick.names <- c("distancela","depth","sstaut","stdaut","sstwin","stdwin",
+                "sstsum","stdsum","sstspr","stdspr","slope_deg_","roughness",
+                "phimedian","vtr_otf","vtr_otf_wi","vtr_otf_sp","vtr_otf_su",
+                "vtr_otf_au")
+seg <- cbind(seg, pred[nearest,pick.names])
+
+
 ### Save!
 save(coast, obs, seg, effort, pred, file="uri-lt-data.RData")
 
