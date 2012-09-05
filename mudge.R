@@ -119,7 +119,7 @@ obs$Sample.Label <- obs$Segment
 obs$Segment <- NULL
 
 # Re-label "Length" as "Effort" (and convert to km)
-obs$Effort <- obs$Length/1000
+#obs$Effort <- obs$Length/1000
 obs$Length <- NULL
 
 
@@ -221,6 +221,9 @@ seg <- as.data.frame(trans.dat)
 names(seg) <- c("tx","ty","bx","by","x","y","Sample.Label",
                        "Effort","Transect.Label")
 
+# effort is in metres
+#seg$Effort <- seg$Effort/1000
+
 rm(trans.dat,segids,effort,transids)
 
 #### check it's all there
@@ -235,7 +238,7 @@ rm(trans.dat,segids,effort,transids)
 #points(transects$x,transects$y,col="blue",pch=19,cex=0.3)
 
 
-### Effort data
+### "Effort" data
 # load the effort data
 effort <- read.csv("csv/lt-effort.csv",as.is=TRUE)
 # change some names around
