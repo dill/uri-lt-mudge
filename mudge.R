@@ -221,10 +221,31 @@ seg <- as.data.frame(trans.dat)
 names(seg) <- c("tx","ty","bx","by","x","y","Sample.Label",
                        "Effort","Transect.Label")
 
-# effort is in metres
-#seg$Effort <- seg$Effort/1000
+# add in the covariate data for the segments
+#   Sample.Label - segment id
+#   depth        - depth in feet
+#   depthm       - depth in metres
+#   slope        - slope
+#   roughness    - roughness
+#   phimedian    - sediment size
+#   chl_fall     - mean chlorophyll A, Fall 2011/2012
+#   chl_winter   - ...
+#   chl_spring   - ...
+#   chl_summer   - ...
+# chl data is from NOAA - http://coastwatch.pfeg.noaa.gov/erddap/index.html
+covars <- readShapeSpatial("geo/covariates/aerial250_segmdpts_090612")
+covars <- covars@data[,c("SEGMENT","RASTERVALU","bathy__m_","SLOPE_DEG_",
+                         "roughness","phimedian","Fall_Mean","Winter_mea",
+                         "Spring_mea","Summer_mea","NEAR_DIST")]
+names(covars) <- c("SEGMENT", "depth", "depthm","slope","roughness",
+                   "phimedian","chl_fall","chl_winter","chl_spring",
+                   "chl_summer","distancelandkm")
+covars$distancelandkm <- (covars$distancelandkm*0.3048)/1000
+# merge that in
+seg <- merge(seg, covars, by.x="Sample.Label",by.y="SEGMENT")
 
-rm(trans.dat,segids,effort,transids)
+rm(trans.dat,segids,effort,transids,covars)
+
 
 #### check it's all there
 #plot(coast$x,coast$y,type="n",xlim=c(-45,45),ylim=c(-40,40))
@@ -274,40 +295,40 @@ effort$Onsurvey_Left <- as.factor(effort$Onsurvey_Left)
 effort$Onsurvey_Right <- as.factor(effort$Onsurvey_Right)
 
 
+
+
 # PENDING -- read in the other effort data and allocate properly!
 # need to find a proper "average" per segment or decide via occasion
 
 
 # Prediction grid
-# NB this is from the strip data -- update?
-predgr <- readShapeSpatial("geo/predgrid/Coverage")
+predgr <- readShapeSpatial("geo/covariates/aerial250_predgrid_envcov_090612")
 #> str(predgr)
 #Formal class 'SpatialPointsDataFrame' [package "sp"] with 5 slots
-#  ..@ data       :'data.frame': 920 obs. of  23 variables:
-#  .. ..$ LINKID    : num [1:920] 1 2 3 4 5 6 7 8 9 10 ...
-#  .. ..$ PARENTID  : num [1:920] 1 1 1 1 1 1 1 1 1 1 ...
-#  .. ..$ DISTANCELA: num [1:920] 71513 76542 81773 81745 81651 ...
+#  ..@ data       :'data.frame': 920 obs. of  22 variables:
+#  .. ..$ OBJECTID  : int [1:920] 1 2 3 4 5 6 7 8 9 10 ...
+#  .. ..$ Join_Count: int [1:920] 1 1 1 1 1 1 1 1 1 1 ...
+#  .. ..$ TARGET_FID: int [1:920] 0 1 2 3 4 5 6 7 8 9 ...
+#  .. ..$ ID        : num [1:920] 1 2 3 4 5 6 7 8 9 10 ...
+#  .. ..$ Distancela: num [1:920] 71513 76542 81773 81745 81651 ...
 #  .. ..$ LONGITUDE : num [1:920] -71.7 -71.7 -71.6 -71.6 -71.6 ...
 #  .. ..$ LATITUDE  : num [1:920] 40.9 40.9 40.9 40.9 40.9 ...
-#  .. ..$ DEPTH     : num [1:920] -166 -165 -168 -173 -175 ...
 #  .. ..$ CELLAREA  : num [1:920] 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 4e+06 ...
-#  .. ..$ SSTAUT    : num [1:920] 12.8 12.9 12.8 12.9 12.9 ...
-#  .. ..$ STDAUT    : num [1:920] 2.99 3.04 3.02 3 2.96 ...
-#  .. ..$ SSTWIN    : num [1:920] 4.64 4.7 4.7 4.7 4.76 ...
-#  .. ..$ STDWIN    : num [1:920] 1.81 1.79 1.76 1.81 1.86 ...
-#  .. ..$ SSTSUM    : num [1:920] 20.8 20.9 20.9 21 21 ...
-#  .. ..$ STDSUM    : num [1:920] 1.85 1.79 1.81 1.87 1.91 ...
-#  .. ..$ SSTSPR    : num [1:920] 9.72 9.96 9.99 9.89 10.02 ...
-#  .. ..$ STDSPR    : num [1:920] 4.45 4.47 4.51 4.52 4.58 ...
+#  .. ..$ bathy__m  : num [1:920] -50.4 -50.4 -51.3 -52.8 -53.2 ...
 #  .. ..$ SLOPE_DEG_: num [1:920] 0.1277 0.0333 0.0586 0.0208 0.0671 ...
-#  .. ..$ ROUGHNESS : num [1:920] 0.0824 0.0503 0.0561 0.043 0.0366 ...
-#  .. ..$ PHIMEDIAN : num [1:920] 2.22 2.34 2.44 2.5 2.54 ...
-#  .. ..$ VTR_OTF   : int [1:920] 14 3 4 0 4 6 12 19 11 24 ...
-#  .. ..$ VTR_OTF_WI: int [1:920] 0 2 1 0 0 0 5 1 2 3 ...
-#  .. ..$ VTR_OTF_SP: int [1:920] 0 0 1 0 0 0 1 1 0 2 ...
-#  .. ..$ VTR_OTF_SU: int [1:920] 1 0 2 0 4 0 4 10 1 2 ...
-#  .. ..$ VTR_OTF_AU: int [1:920] 13 1 0 0 0 6 2 7 8 17 ...
-#  .. ..- attr(*, "data_types")= chr [1:23] "N" "N" "N" "N" ...
+#  .. ..$ roughness : num [1:920] 0.0824 0.0503 0.0561 0.043 0.0366 ...
+#  .. ..$ phimedian : num [1:920] 2.22 2.34 2.44 2.5 2.54 ...
+#  .. ..$ SSTautSTD : num [1:920] 2.99 3.04 3.02 3 2.96 ...
+#  .. ..$ SSTsprSTD : num [1:920] 4.45 4.47 4.51 4.52 4.58 ...
+#  .. ..$ SSTsumSTD : num [1:920] 4.45 4.47 4.51 4.52 4.58 ...
+#  .. ..$ SSTwinSTD : num [1:920] 1.85 1.79 1.81 1.87 1.91 ...
+#  .. ..$ latitude_1: num [1:920] 40.9 40.9 40.9 40.9 40.9 ...
+#  .. ..$ longitude_: num [1:920] -71.7 -71.7 -71.6 -71.6 -71.6 ...
+#  .. ..$ Fall_Mean : num [1:920] 2.45 2.46 2.15 2.14 1.81 ...
+#  .. ..$ Winter_mea: num [1:920] 2.25 2.34 2.93 2.82 2.61 ...
+#  .. ..$ Spring_mea: num [1:920] 2.46 2.35 2.31 2.58 2.54 ...
+#  .. ..$ Summer_mea: num [1:920] 1.264 1.282 1.075 0.887 0.872 ...
+#  .. ..- attr(*, "data_types")= chr [1:22] "N" "N" "N" "F" ...
 #  ..@ coords.nrs : num(0) 
 #  ..@ coords     : num [1:920, 1:2] 278339 284901 291463 298025 304587 ...
 #  .. ..- attr(*, "dimnames")=List of 2
@@ -322,9 +343,7 @@ predgr <- readShapeSpatial("geo/predgrid/Coverage")
 
 # pull out the data
 predgr <- predgr@data
-# remove useless fields
-predgr$LINKID <- NULL
-predgr$PARENTID <- NULL
+
 
 # convert lat/long
 ne <- latlong2km(lon=predgr$LONGITUDE,lat=predgr$LATITUDE,lon0=lon.0,lat0=lat.0)
@@ -332,37 +351,81 @@ predgr$x <- ne$km.e
 predgr$y <- ne$km.n
 predgr$LONGITUDE <- NULL
 predgr$LATITUDE <- NULL
-
 rm(ne)
 
-# convert distance to land to km and cell area to km^2 
-#  (according to Louise's code)
-predgr$DISTANCELA <- predgr$DISTANCELA/1000
-predgr$CELLAREA <- predgr$CELLAREA/(1000^2)
+# kill those things that don't matter
+predgr$OBJECTID <- NULL
+predgr$Join_Count <- NULL
+predgr$TARGET_FID <- NULL
+predgr$ID <- NULL
+predgr$latitude_1 <- NULL
+predgr$SSTautSTD <- NULL
+predgr$SSTsprSTD <- NULL
+predgr$SSTsumSTD <- NULL
+predgr$SSTwinSTD <- NULL
+predgr$longitude_ <- NULL
 
-names(predgr)<-tolower(names(predgr))
+#   depth        - depth in feet
+#   depthm       - depth in metres
+#   slope        - slope
+#   roughness    - roughness
+#   phimedian    - sediment size
+#   chl_fall     - mean chlorophyll A, Fall 2011/2012
+#   chl_winter   - ...
+#   chl_spring   - ...
+#   chl_summer   - ...
+
+# convert distance to land to km 
+#  (according to Louise's code)
+predgr$distancelandkm <- predgr$Distancela/1000
+predgr$Distancela <- NULL
+# cell area is in metres
+predgr$cellaream <- predgr$CELLAREA
+predgr$CELLAREA <- NULL
+# chlorophyll
+predgr$chl_fall <- predgr$Fall_Mean
+predgr$chl_winter <- predgr$Winter_mea
+predgr$chl_spring <- predgr$Spring_mea
+predgr$chl_summer <- predgr$Summer_mea
+predgr$Fall_Mean <- NULL
+predgr$Winter_mea <- NULL
+predgr$Spring_mea <- NULL
+predgr$Summer_mea <- NULL
+# depth
+predgr$depthm <- predgr$bathy__m
+predgr$bathy__m <- NULL
+# slope
+predgr$slope <- predgr$SLOPE_DEG_
+predgr$SLOPE_DEG_ <- NULL
 
 pred <- predgr
 rm(predgr)
 
 
-### match up the extra pred data with to the segments
+##### match up the extra pred data with to the segments
+#
+## find the nearest prediction cell to each segment
+#dists <- as.matrix(dist(rbind(pred[,c("x","y")],seg[,c("x","y")]),
+#                        diag=TRUE,upper=TRUE))
+#dists[lower.tri(dists)] <- NA
+#diag(dists) <- NA
+## only take the pred -> seg part of the matrix
+#dists <- dists[1:nrow(pred),(nrow(pred)+1):ncol(dists)]
+## what is the nearest cell?
+#nearest <- apply(dists,2,which.min)
+#
+#pick.names <- c("distancela","depth","sstaut","stdaut","sstwin","stdwin",
+#                "sstsum","stdsum","sstspr","stdspr","slope_deg_","roughness",
+#                "phimedian","vtr_otf","vtr_otf_wi","vtr_otf_sp","vtr_otf_su",
+#                "vtr_otf_au")
+#seg <- cbind(seg, pred[nearest,pick.names])
 
-# find the nearest prediction cell to each segment
-dists <- as.matrix(dist(rbind(pred[,c("x","y")],seg[,c("x","y")]),
-                        diag=TRUE,upper=TRUE))
-dists[lower.tri(dists)] <- NA
-diag(dists) <- NA
-# only take the pred -> seg part of the matrix
-dists <- dists[1:nrow(pred),(nrow(pred)+1):ncol(dists)]
-# what is the nearest cell?
-nearest <- apply(dists,2,which.min)
 
-pick.names <- c("distancela","depth","sstaut","stdaut","sstwin","stdwin",
-                "sstsum","stdsum","sstspr","stdspr","slope_deg_","roughness",
-                "phimedian","vtr_otf","vtr_otf_wi","vtr_otf_sp","vtr_otf_su",
-                "vtr_otf_au")
-seg <- cbind(seg, pred[nearest,pick.names])
+# remove segments that don't have covariate data
+drop.segs <- c(624,819,1025,1226,1427,625,820,1026,1227,1629,1729,1930,1730)
+seg <- seg[!(seg$Sample.Label %in% drop.segs),]
+obs <- obs[!(obs$Sample.Label %in% drop.segs),]
+
 
 
 ### Save!
