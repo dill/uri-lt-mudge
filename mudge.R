@@ -324,9 +324,6 @@ effort$Onsurvey_Right <- as.factor(effort$Onsurvey_Right)
 
 # check that worked
 #mm<-merge(seg,effort,all=TRUE)
-#mm$chl_season.x <- NULL
-#mm$chl_season <- mm$chl_season.y
-#mm$chl_season.y <- NULL
 #mm$width <- rep(2,nrow(mm))
 #mm$height <- rep(2,nrow(mm))
 #p <- ggplot(mm,aes(x=x,y=y))
