@@ -105,8 +105,17 @@ month[month %in% c(12,1,2)] <- "Winter"
 month[month %in% c(3,4,5)] <- "Spring"
 obs$Season <- as.factor(month)
 # pull out the year
-obs$Year <- as.factor(split.date[,3])
+obs$Year <- split.date[,3]
+# SeasonYear as in the effort data, below
+month <- split.date[,2]
+obs$SeasonYear <- paste(obs$Season,obs$Year,sep="") 
+obs$SeasonYear[month==12 & obs$Year==2010] <- "Winter1011"
+obs$SeasonYear[(month%in%c(1,2)) & obs$Year==2011] <- "Winter1011"
+obs$SeasonYear[month==12 & obs$Year==2011] <- "Winter1112"
+obs$SeasonYear[(month%in%c(1,2)) & obs$Year==2012] <- "Winter1112"
 
+obs$Year <- as.factor(split.date[,3])
+obs$SeasonYear <- as.factor(obs$SeasonYear)
 
 # PENDING: 
 # difference between Transect and Transect_1?
