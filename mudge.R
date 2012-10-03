@@ -132,6 +132,7 @@ obs$Segment <- NULL
 obs$Length <- NULL
 
 
+
 ### coastline!
 # load the coastline data (from Louise Burt)
 coast <- read.table("geo/coast.dat",as.is=TRUE,header=TRUE)
@@ -330,6 +331,13 @@ effort <- merge(effort, chl_dat,
 # factor whether we were on survey
 effort$Onsurvey_Left <- as.factor(effort$Onsurvey_Left)
 effort$Onsurvey_Right <- as.factor(effort$Onsurvey_Right)
+
+
+# Observer conditions have a "fair" and a "Fair"
+effort$Observerconditions_Left[effort$Observerconditions_Left=="fair"] <- "Fair"
+effort$Observerconditions_Right[effort$Observerconditions_Right=="fair"] <- "Fair"
+effort$Observerconditions_Left <- as.factor(effort$Observerconditions_Left)
+effort$Observerconditions_Right <- as.factor(effort$Observerconditions_Right)
 
 # check that worked
 #mm<-merge(seg,effort,all=TRUE)
