@@ -482,33 +482,40 @@ predgr$Fall_Mean <- NULL
 predgr$Winter_mea <- NULL
 predgr$Spring_mea <- NULL
 predgr$Summer_mea <- NULL
-# chlorophyll - season mean each year
+# chlorophyll - season means
+predgr$Fall_Mean_  <- NULL
+predgr$Winter_m_1 <- NULL
+predgr$Spring_m_1  <- NULL
+predgr$Summer_m_1  <- NULL
+
+
+# save the monthly's for the FCPI calculation
+mpred <- predgr
+
+# now remove for the other data sets
+# chlorophyll - monthly mean
 predgr$Sep_2010  <- NULL
 predgr$Sep_2011  <- NULL
 predgr$Oct_2010  <- NULL
 predgr$Oct_2011  <- NULL
 predgr$Nov_2010  <- NULL
 predgr$Nov_2011  <- NULL
-predgr$Fall_Mean_  <- NULL
 predgr$Dec_2010  <- NULL
 predgr$Dec_2011  <- NULL
 predgr$Jan_2011  <- NULL
 predgr$Jan_2012  <- NULL
 predgr$Feb_2011  <- NULL
 predgr$Feb_2012  <- NULL
-predgr$Winter_m_1 <- NULL 
 predgr$March_2011  <- NULL
 predgr$March_2012  <- NULL
 predgr$April_2011  <- NULL
 predgr$April_2012  <- NULL
 predgr$May_2011  <- NULL
 predgr$May_2012  <- NULL
-predgr$Spring_m_1  <- NULL
 predgr$June_2011  <- NULL
 predgr$June_2012  <- NULL
 predgr$July_2011  <- NULL
 predgr$Aug_2011  <- NULL
-predgr$Summer_m_1  <- NULL
 # pull out the seasonal Chlorophyll A per year, store in a separate data set
 #  so we don't mess up the structure of the other data
 tpred <- predgr[,c("Fall2010","Winter1011","Spring2011","Summer2011",
@@ -580,7 +587,7 @@ effort <- effort[!(effort$Sample.Label %in% drop.segs),]
 
 
 ### Save!
-save(coast, obs, seg, effort, pred, tpred, file="uri-lt-data.RData")
+save(coast, obs, seg, effort, pred, tpred, mpred, file="uri-lt-data.RData")
 
 
 
