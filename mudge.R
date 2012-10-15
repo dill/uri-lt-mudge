@@ -252,10 +252,20 @@ chl_dat <- covars@data[,c("Fall2010", "Winter1011", "Spring2011", "Summer2011",
 # save the covariate data
 covars <- covars@data[,c("SEGMENT","RASTERVALU","bathy__m_","SLOPE_DEG_",
                          "roughness","phimedian","Fall_Mean","Winter_mea",
-                         "Spring_mea","Summer_mea","NEAR_DIST")]
+                         "Spring_mea","Summer_mea","NEAR_DIST",
+                         "Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010",
+                         "Nov_2011","Dec_2010","Dec_2011","Jan_2011","Jan_2012",
+                         "Feb_2011","Feb_2012","March_2011","March_2012",
+                         "April_2011","April_2012","May_2011","May_2012",
+                         "June_2011","June_2012","July_2011","Aug_2011")]
 names(covars) <- c("SEGMENT", "depth", "depthm","slope","roughness",
                    "phimedian","chl_fall","chl_winter","chl_spring",
-                   "chl_summer","distancelandkm")
+                   "chl_summer","distancelandkm",
+                         "Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010",
+                         "Nov_2011","Dec_2010","Dec_2011","Jan_2011","Jan_2012",
+                         "Feb_2011","Feb_2012","March_2011","March_2012",
+                         "April_2011","April_2012","May_2011","May_2012",
+                         "June_2011","June_2012","July_2011","Aug_2011")
 
 # convert distance to land to km
 covars$distancelandkm <- (covars$distancelandkm*0.3048)/1000
