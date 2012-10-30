@@ -22,7 +22,9 @@ chl.cast$x <- noreast$km.e
 
 # load the coastline
 library(mgcv)
-coast <- read.table("../geo/coast.dat",header=T)
+SAMP <- read.table("../geo/coast.dat",header=T)
+coast <- rbind(c(NA,NA),
+               c(
 coast <- as.data.frame(latlong2km(lon=coast[,1],
                                   lat=coast[,2],
                                   lon0=lon.0,lat0=lat.0))
