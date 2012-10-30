@@ -185,6 +185,11 @@ coast.groups <- rep(1:(length(nas)+1),diff(c(0,nas,nrow(coast)+1))-1)
 coast <- cbind(coast[-nas,],
                    group=coast.groups)
 
+### SAMP polygon
+
+#samp <- readShapeSpatial("geo/samp/Study_ar")
+
+
 
 ### Segment data
 library(maptools)
@@ -330,39 +335,73 @@ effort <- merge(effort, chl_dat,
                 by.x=c("SeasonYear","Sample.Label"),
                 by.y=c("sy","segid"))
 
-## merge this into the segment data
-#effort<-merge(seg,effort,by.x="Sample.Label",by.y="Sample.Label")
-#
-## only need one Transect.Label
-#effort$Transect.Label <- effort$Transect.Label.x
-#effort$Transect.Label.x <- NULL
-#effort$Transect.Label.y <- NULL
-
 # factor whether we were on survey
 effort$Onsurvey_Left <- as.factor(effort$Onsurvey_Left)
 effort$Onsurvey_Right <- as.factor(effort$Onsurvey_Right)
-
-
 # Observer conditions have a "fair" and a "Fair"
 effort$Observerconditions_Left[effort$Observerconditions_Left=="fair"] <- "Fair"
 effort$Observerconditions_Right[effort$Observerconditions_Right=="fair"] <- "Fair"
 effort$Observerconditions_Left <- as.factor(effort$Observerconditions_Left)
 effort$Observerconditions_Right <- as.factor(effort$Observerconditions_Right)
 
+## geometric mean of chlorophyll
+geom_m <- function(x,ind){
+  prod(x[ind])^(1/length(x[ind]))
+}
+wmonths <- c("Dec_2010","Dec_2011","Jan_2011","Jan_2012","Feb_2011","Feb_2012")
+spmonths <- c("March_2011","March_2012","April_2011","April_2012",
+              "May_2011","May_2012")
+fmonths <- c("Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010","Nov_2011")
+sumonths <- c("June_2011","June_2012","July_2011","Aug_2011")
+
+gchl_winter <- apply(seg,1,geom_m,ind=wmonths)
+seg$gchl_winter <- gchl_winter
+gchl_spring <- apply(seg,1,geom_m,ind=spmonths)
+seg$gchl_spring <- gchl_spring
+gchl_summer <- apply(seg,1,geom_m,ind=sumonths)
+seg$gchl_summer <- gchl_summer
+gchl_fall <- apply(seg,1,geom_m,ind=fmonths)
+seg$gchl_fall <- gchl_fall
+
+## geometric mean for SeasonYear chlorophyll
+seasonyears <- list(Winter1011 = c("Dec_2010","Jan_2011","Feb_2011"),
+                    Winter1112 = c("Dec_2011","Jan_2012","Feb_2012"),
+                    Spring2011 = c("March_2011","April_2011","May_2011"),
+                    Spring2012 = c("March_2012","April_2012","May_2012"),
+                    Fall2010   = c("Sep_2010","Oct_2010","Nov_2010"),
+                    Fall2011   = c("Sep_2011","Oct_2011","Nov_2011"),
+                    Summer2011 = c("June_2011","July_2011","Aug_2011"),
+                    Summer2012 = c("June_2012"))
+
+gchl_season <- c()
+
+for(sy in names(seasonyears)){
+  gchl_season <- rbind(gchl_season,
+                       cbind(seg$Sample.Label,
+                             sy,
+                             apply(seg,1,geom_m,ind=seasonyears[[sy]])
+                            )
+                      )
+}
+
+gchl_season <- data.frame(Sample.Label = as.factor(gchl_season[,1]),
+                          SeasonYear   = as.factor(gchl_season[,2]),
+                          gchl         = as.numeric(gchl_season[,3]))
+
+
+effort <- merge(effort, gchl_season,
+                by.x=c("SeasonYear","Sample.Label"),
+                by.y=c("SeasonYear","Sample.Label"))
+
 # check that worked
 #mm<-merge(seg,effort,all=TRUE)
 #mm$width <- rep(2,nrow(mm))
 #mm$height <- rep(2,nrow(mm))
-#p <- ggplot(mm,aes(x=x,y=y))
+#p <- ggplot(mm,aes(x=x,y=y)
 #p <- p + geom_tile(aes(fill=chl_season,width=width,height=height)) 
 #p <- p + scale_fill_continuous(trans="sqrt",limits=c(0.5,61))
 #p <- p + facet_wrap(~SeasonYear)
 #p
-
-
-
-# PENDING -- read in the other effort data and allocate properly!
-# need to find a proper "average" per segment or decide via occasion
 
 
 # Prediction grid
@@ -594,6 +633,12 @@ seg <- seg[!(seg$Sample.Label %in% drop.segs),]
 obs <- obs[!(obs$Sample.Label %in% drop.segs),]
 effort <- effort[!(effort$Sample.Label %in% drop.segs),]
 
+
+# grab the fcpi data
+load("fcpi-predseg.RData")
+
+seg <- cbind(seg,fcpi=chl_segs$fcpi)
+pred <- cbind(pred,fcpi=chl_pred$fcpi)
 
 
 ### Save!
