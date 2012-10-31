@@ -404,6 +404,7 @@ effort <- merge(effort, gchl_season,
 #p
 
 
+
 # Prediction grid
 predgr <- readShapeSpatial("geo/covariates/aerial250_predgrid_envcov_091112")
 # > str(predgr)
@@ -635,11 +636,14 @@ effort <- effort[!(effort$Sample.Label %in% drop.segs),]
 
 
 # grab the fcpi data
-load("fcpi-predseg.RData")
+#load("fcpi-predseg.RData")
+#seg <- cbind(seg,fcpi=chl_segs$fcpi)
+#pred <- cbind(pred,fcpi=chl_pred$fcpi)
 
-seg <- cbind(seg,fcpi=chl_segs$fcpi)
-pred <- cbind(pred,fcpi=chl_pred$fcpi)
-
+# long run geometric mean from MODIS
+load("fcpi/gchl.RData")
+seg$gchl_long <- gchl_seg
+pred$gchl_long <- gchl_pred
 
 ### Save!
 save(coast, obs, seg, effort, pred, tpred, mpred, file="uri-lt-data.RData")
