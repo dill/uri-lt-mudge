@@ -11,6 +11,7 @@ lon.0 <- -71.34
 
 # load the dsm library for latlon2km
 library(dsm)
+library(maptools)
 
 ### Observations
 
@@ -186,14 +187,16 @@ coast <- cbind(coast[-nas,],
                    group=coast.groups)
 
 ### SAMP polygon
-
-#samp <- readShapeSpatial("geo/samp/Study_ar")
-
+samp <- readShapeSpatial("geo/samp/Sampareaoutline")
+samp <- samp@lines[[1]]@Lines[[1]]@coords
+samp <- as.data.frame(latlong2km(lon=samp[,1],
+                                 lat=samp[,2],
+                                 lon0=lon.0,lat0=lat.0))
+names(samp) <- c("x","y")
+samp <- rbind(samp,samp[nrow(samp),])
 
 
 ### Segment data
-library(maptools)
-
 trans <- readShapeSpatial("geo/transects/aerialtransects082112")
 
 # the segment ids are stored separately, the coding (I think!) is
@@ -646,7 +649,7 @@ seg$gchl_long <- gchl_seg
 pred$gchl_long <- gchl_pred
 
 ### Save!
-save(coast, obs, seg, effort, pred, tpred, mpred, file="uri-lt-data.RData")
+save(coast, obs, seg, effort, pred, tpred, mpred, samp, file="uri-lt-data.RData")
 
 
 
