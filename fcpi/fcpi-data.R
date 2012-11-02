@@ -20,19 +20,12 @@ noreast <- latlong2km(as.numeric(as.character(chl.cast$longitude)),
 chl.cast$y <- noreast$km.n
 chl.cast$x <- noreast$km.e
 
-# load the coastline
-library(mgcv)
-SAMP <- read.table("../geo/coast.dat",header=T)
-coast <- rbind(c(NA,NA),
-               c(
-coast <- as.data.frame(latlong2km(lon=coast[,1],
-                                  lat=coast[,2],
-                                  lon0=lon.0,lat0=lat.0))
-names(coast) <- c("x","y")
+# get only those points inside the samp region
+load("../uri-lt-data.RData")
 x <- chl.cast$x
 y <- chl.cast$y
-inout <- inSide(coast,x,y)
-chl.cast <- chl.cast[inout,]
+ind <- inSide(as.list(samp),x,y)
+chl.cast <- chl.cast[ind,]
 
 ### suryan steps
 

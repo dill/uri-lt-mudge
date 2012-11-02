@@ -193,7 +193,7 @@ samp <- as.data.frame(latlong2km(lon=samp[,1],
                                  lat=samp[,2],
                                  lon0=lon.0,lat0=lat.0))
 names(samp) <- c("x","y")
-samp <- rbind(samp,samp[nrow(samp),])
+samp <- rbind(samp,samp[1,])
 
 
 ### Segment data
@@ -639,9 +639,9 @@ effort <- effort[!(effort$Sample.Label %in% drop.segs),]
 
 
 # grab the fcpi data
-#load("fcpi-predseg.RData")
-#seg <- cbind(seg,fcpi=chl_segs$fcpi)
-#pred <- cbind(pred,fcpi=chl_pred$fcpi)
+load("fcpi/fcpi-predseg.RData")
+seg <- cbind(seg,fcpi=chl_segs$fcpi)
+pred <- cbind(pred,fcpi=chl_pred$fcpi)
 
 # long run geometric mean from MODIS
 load("fcpi/gchl.RData")
