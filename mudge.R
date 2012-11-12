@@ -128,11 +128,6 @@ obs$Transect_1 <- NULL
 obs$Sample.Label <- obs$Segment
 obs$Segment <- NULL
 
-# Re-label "Length" as "Effort" (and convert to km)
-#obs$Effort <- obs$Length/1000
-obs$Length <- NULL
-
-
 
 ### coastline!
 # load the coastline data (from Louise Burt)
@@ -202,7 +197,7 @@ trans <- readShapeSpatial("geo/transects/aerialtransects082112")
 # the segment ids are stored separately, the coding (I think!) is
 # transect number (1/2 digit) then segment number (1/2 digit)
 segids <- trans@data$Segment
-effort <- trans@data$Length
+effort <- trans@data$Length*0.3048
 transids <- trans@data$Transect
 
 trans.dat <- c()
@@ -259,21 +254,21 @@ chl_dat <- covars@data[,c("Fall2010", "Winter1011", "Spring2011", "Summer2011",
 
 # save the covariate data
 covars <- covars@data[,c("SEGMENT","RASTERVALU","bathy__m_","SLOPE_DEG_",
-                         "roughness","phimedian","Fall_Mean","Winter_mea",
-                         "Spring_mea","Summer_mea","NEAR_DIST",
+                         "roughness","phimedian","NEAR_DIST",
+#                         "Fall_Mean","Winter_mea","Spring_mea","Summer_mea",
                          "Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010",
                          "Nov_2011","Dec_2010","Dec_2011","Jan_2011","Jan_2012",
                          "Feb_2011","Feb_2012","March_2011","March_2012",
                          "April_2011","April_2012","May_2011","May_2012",
                          "June_2011","June_2012","July_2011","Aug_2011")]
 names(covars) <- c("SEGMENT", "depth", "depthm","slope","roughness",
-                   "phimedian","chl_fall","chl_winter","chl_spring",
-                   "chl_summer","distancelandkm",
-                         "Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010",
-                         "Nov_2011","Dec_2010","Dec_2011","Jan_2011","Jan_2012",
-                         "Feb_2011","Feb_2012","March_2011","March_2012",
-                         "April_2011","April_2012","May_2011","May_2012",
-                         "June_2011","June_2012","July_2011","Aug_2011")
+                   "phimedian","distancelandkm",
+#                   "chl_fall","chl_winter","chl_spring","chl_summer",
+                   "Sep_2010","Sep_2011","Oct_2010","Oct_2011","Nov_2010",
+                   "Nov_2011","Dec_2010","Dec_2011","Jan_2011","Jan_2012",
+                   "Feb_2011","Feb_2012","March_2011","March_2012",
+                   "April_2011","April_2012","May_2011","May_2012",
+                   "June_2011","June_2012","July_2011","Aug_2011")
 
 # convert distance to land to km
 covars$distancelandkm <- (covars$distancelandkm*0.3048)/1000
@@ -331,12 +326,12 @@ effort$SeasonYear <- as.factor(effort$SeasonYear)
 
 # put in the chlorophyll data
 library(reshape2)
-chl_dat <- melt(chl_dat,id.vars="SEGMENT")
-names(chl_dat) <- c("segid","sy","chl_season")
-chl_dat$sy <- as.factor(chl_dat$sy)
-effort <- merge(effort, chl_dat,
-                by.x=c("SeasonYear","Sample.Label"),
-                by.y=c("sy","segid"))
+#chl_dat <- melt(chl_dat,id.vars="SEGMENT")
+#names(chl_dat) <- c("segid","sy","chl_season")
+#chl_dat$sy <- as.factor(chl_dat$sy)
+#effort <- merge(effort, chl_dat,
+#                by.x=c("SeasonYear","Sample.Label"),
+#                by.y=c("sy","segid"))
 
 # factor whether we were on survey
 effort$Onsurvey_Left <- as.factor(effort$Onsurvey_Left)
@@ -365,6 +360,7 @@ gchl_summer <- apply(seg,1,geom_m,ind=sumonths)
 seg$gchl_summer <- gchl_summer
 gchl_fall <- apply(seg,1,geom_m,ind=fmonths)
 seg$gchl_fall <- gchl_fall
+
 
 ## geometric mean for SeasonYear chlorophyll
 seasonyears <- list(Winter1011 = c("Dec_2010","Jan_2011","Feb_2011"),
@@ -406,6 +402,8 @@ effort <- merge(effort, gchl_season,
 #p <- p + facet_wrap(~SeasonYear)
 #p
 
+# remove unecessary columns
+seg<-seg[,!names(seg)%in%c(wmonths,spmonths,fmonths,sumonths)]
 
 
 # Prediction grid
@@ -509,15 +507,15 @@ predgr$SSTsumSTD <- NULL
 predgr$SSTwinSTD <- NULL
 predgr$longitude_ <- NULL
 
-#   depth        - depth in feet
-#   depthm       - depth in metres
-#   slope        - slope
-#   roughness    - roughness
-#   phimedian    - sediment size
-#   chl_fall     - mean chlorophyll A, Fall 2011/2012
-#   chl_winter   - ...
-#   chl_spring   - ...
-#   chl_summer   - ...
+# depth        - depth in feet
+# depthm       - depth in metres
+# slope        - slope
+# roughness    - roughness
+# phimedian    - sediment size
+# chl_fall     - mean chlorophyll A, Fall 2011/2012
+# chl_winter   - ...
+# chl_spring   - ...
+# chl_summer   - ...
 
 # convert distance to land to km 
 #  (according to Louise's code)
@@ -540,7 +538,6 @@ predgr$Fall_Mean_  <- NULL
 predgr$Winter_m_1 <- NULL
 predgr$Spring_m_1  <- NULL
 predgr$Summer_m_1  <- NULL
-
 
 # save the monthly's for the FCPI calculation
 mpred <- predgr
@@ -610,33 +607,11 @@ names(tpred) <- c("OBJECTID","SeasonYear","chl_season")
 #p <- p + facet_wrap(~SeasonYear)
 #p
 
-
-
-##### match up the extra pred data with to the segments
-#
-## find the nearest prediction cell to each segment
-#dists <- as.matrix(dist(rbind(pred[,c("x","y")],seg[,c("x","y")]),
-#                        diag=TRUE,upper=TRUE))
-#dists[lower.tri(dists)] <- NA
-#diag(dists) <- NA
-## only take the pred -> seg part of the matrix
-#dists <- dists[1:nrow(pred),(nrow(pred)+1):ncol(dists)]
-## what is the nearest cell?
-#nearest <- apply(dists,2,which.min)
-#
-#pick.names <- c("distancela","depth","sstaut","stdaut","sstwin","stdwin",
-#                "sstsum","stdsum","sstspr","stdspr","slope_deg_","roughness",
-#                "phimedian","vtr_otf","vtr_otf_wi","vtr_otf_sp","vtr_otf_su",
-#                "vtr_otf_au")
-#seg <- cbind(seg, pred[nearest,pick.names])
-
-
-# remove segments that don't have covariate data
+# remove segments that don't have covariate data outside of the SAMP area
 drop.segs <- c(624,819,1025,1226,1427,625,820,1026,1227,1629,1729,1930,1730)
 seg <- seg[!(seg$Sample.Label %in% drop.segs),]
 obs <- obs[!(obs$Sample.Label %in% drop.segs),]
 effort <- effort[!(effort$Sample.Label %in% drop.segs),]
-
 
 # grab the fcpi data
 load("fcpi/fcpi-predseg.RData")
@@ -650,6 +625,4 @@ pred$gchl_long <- gchl_pred
 
 ### Save!
 save(coast, obs, seg, effort, pred, tpred, mpred, samp, file="uri-lt-data.RData")
-
-
 
