@@ -542,6 +542,17 @@ predgr$Summer_m_1  <- NULL
 # save the monthly's for the FCPI calculation
 mpred <- predgr
 
+gchl_winter <- apply(predgr,1,geom_m,ind=wmonths)
+predgr$gchl_winter <- gchl_winter
+gchl_spring <- apply(predgr,1,geom_m,ind=spmonths)
+predgr$gchl_spring <- gchl_spring
+gchl_summer <- apply(predgr,1,geom_m,ind=sumonths)
+predgr$gchl_summer <- gchl_summer
+gchl_fall <- apply(predgr,1,geom_m,ind=fmonths)
+predgr$gchl_fall <- gchl_fall
+
+
+
 # now remove for the other data sets
 # chlorophyll - monthly mean
 predgr$Sep_2010  <- NULL
