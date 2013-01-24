@@ -128,6 +128,9 @@ obs$Transect_1 <- NULL
 obs$Sample.Label <- obs$Segment
 obs$Segment <- NULL
 
+# add the seasonyear in too
+#obs$Sample.Label <- paste(obs$Segment,"-",obs$SeasonYear,sep="")
+#obs$Segment <- NULL
 
 ### coastline!
 # load the coastline data (from Louise Burt)
@@ -618,11 +621,26 @@ names(tpred) <- c("OBJECTID","SeasonYear","chl_season")
 #p <- p + facet_wrap(~SeasonYear)
 #p
 
-# remove segments that don't have covariate data outside of the SAMP area
-drop.segs <- c(624,819,1025,1226,1427,625,820,1026,1227,1629,1729,1930,1730)
-seg <- seg[!(seg$Sample.Label %in% drop.segs),]
-obs <- obs[!(obs$Sample.Label %in% drop.segs),]
-effort <- effort[!(effort$Sample.Label %in% drop.segs),]
+# remove segments that don't have covariate data
+#drop.segs <- c(624,819,1025,1226,1427,625,820,1026,1227,1629,1729,1930,1730)
+#seg <- seg[!(seg$Sample.Label %in% drop.segs),]
+#obs <- obs[!(obs$Sample.Label %in% drop.segs),]
+#effort <- effort[!(effort$Sample.Label %in% drop.segs),]
+
+
+
+# outside of the SAMP area
+#drop.segs <- c(623:622,815:816,1019:1020,1218:1219,1416:1419,1615:1619,1715:1718,1913:1917,2109:2114)
+#
+##par(mfrow=c(1,2))
+##plot(seg2$x,seg2$y)
+##i<-(seg$Sample.Label%in% drop.segs); points(seg2$x[i],seg2$y[i],pch=19)
+##plot(seg2$x[!(seg$Sample.Label%in% drop.segs)],seg2$y[!(seg$Sample.Label%in% drop.segs)])
+##
+#
+#seg <- seg[!(seg$Sample.Label %in% drop.segs),]
+#obs <- obs[!(obs$Sample.Label %in% drop.segs),]
+#effort <- effort[!(effort$Sample.Label %in% drop.segs),]
 
 # grab the fcpi data
 load("fcpi/fcpi-predseg.RData")
@@ -633,6 +651,7 @@ pred <- cbind(pred,fcpi=chl_pred$fcpi)
 load("fcpi/gchl.RData")
 seg$gchl_long <- gchl_seg
 pred$gchl_long <- gchl_pred
+
 
 ### Save!
 save(coast, obs, seg, effort, pred, tpred, mpred, samp, file="uri-lt-data.RData")

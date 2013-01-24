@@ -59,35 +59,35 @@ gchl_pred <- apply(chl_data[pred_ind,],1,geom_m)
 
 
 
-p.opts.geo <- opts(panel.grid.major=theme_blank(),
-                   panel.grid.minor=theme_blank(),
-                   panel.background=theme_blank(),
-                   strip.background=theme_blank(),
-                   legend.key=theme_blank(),
-                   aspect.ratio=1
-                  )
-
-
-# plot on lat/long
-pdat <- cbind(gchl_pred,pred$x,pred$y)
-pdat <- as.data.frame(pdat)
-names(pdat) <- c("gchl","x","y")
-#p <- ggplot(pdat,aes(x=x,y=y,fill=gchl,width=0.0125,height=0.0125))
-p <- ggplot(pdat,aes(x=x,y=y,fill=gchl,width=2,height=2))
-#p <- p + coord_map()
-p <- p + geom_tile()
-p <- p + p.opts.geo
-print(p)
-
-# plot on northings/eastings
-pdat <- cbind(fcpi,locs.xy)
-pdat <- as.data.frame(pdat)
-names(pdat) <- c("fcpi","y","x")
-#p <- ggplot(pdat,aes(x=x,y=y,fill=fcpi,width=1.03,height=1.38))
+#p.opts.geo <- opts(panel.grid.major=theme_blank(),
+#                   panel.grid.minor=theme_blank(),
+#                   panel.background=theme_blank(),
+#                   strip.background=theme_blank(),
+#                   legend.key=theme_blank(),
+#                   aspect.ratio=1
+#                  )
+#
+#
+## plot on lat/long
+#pdat <- cbind(gchl_pred,pred$x,pred$y)
+#pdat <- as.data.frame(pdat)
+#names(pdat) <- c("gchl","x","y")
+##p <- ggplot(pdat,aes(x=x,y=y,fill=gchl,width=0.0125,height=0.0125))
+#p <- ggplot(pdat,aes(x=x,y=y,fill=gchl,width=2,height=2))
+##p <- p + coord_map()
 #p <- p + geom_tile()
-#p <- p + p.opts.geo + opts(title="FCPI")
-#p <- p + coord_cartesian(xlim = c(-40,40),ylim = c(-40,40))
+#p <- p + p.opts.geo
 #print(p)
+#
+## plot on northings/eastings
+#pdat <- cbind(fcpi,locs.xy)
+#pdat <- as.data.frame(pdat)
+#names(pdat) <- c("fcpi","y","x")
+##p <- ggplot(pdat,aes(x=x,y=y,fill=fcpi,width=1.03,height=1.38))
+##p <- p + geom_tile()
+##p <- p + p.opts.geo + opts(title="FCPI")
+##p <- p + coord_cartesian(xlim = c(-40,40),ylim = c(-40,40))
+##print(p)
 
 save(gchl_seg,gchl_pred,file="gchl.RData")
 
